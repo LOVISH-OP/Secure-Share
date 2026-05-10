@@ -1,0 +1,229 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./App.css";
+
+
+function App() {
+  const BASE_URL = "http://localhost:5000";
+
+  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [fileKeys, setFileKeys] = useState({});
+  const [message, setMessage] = useState("");
+  const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const fetchFiles = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/files`);
+      setFiles(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFiles();
+  }, []);
+
+  const handleUpload = async () => {
+    if (!file) {
+      setMessage("Please select a file first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setUploading(true);
+      const res = await axios.post(`${BASE_URL}/upload`, formData);
+
+      const { filename, key, iv } = res.data;
+
+      setFileKeys((prev) => ({
+        ...prev,
+        [filename]: { key, iv },
+      }));
+
+      setMessage("File uploaded and encrypted successfully.");
+      setFile(null);
+      fetchFiles();
+    } catch (err) {
+      console.error(err);
+      setMessage("Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDecrypt = (filename) => {
+    const data = fileKeys[filename];
+
+    if (!data) {
+      alert("Key missing. Upload the file in this session before decrypting.");
+      return;
+    }
+
+    const url = `${BASE_URL}/download/${filename}?key=${data.key}&iv=${data.iv}`;
+    window.open(url);
+  };
+
+  const handleDelete = async (filename) => {
+    try {
+      await axios.delete(`${BASE_URL}/delete/${filename}`);
+
+      setFiles((prev) => prev.filter((f) => f !== filename));
+      setFileKeys((prev) => {
+        const updated = { ...prev };
+        delete updated[filename];
+        return updated;
+      });
+
+      setMessage("File deleted successfully.");
+    } catch (err) {
+      console.error(err);
+      setMessage("Delete failed.");
+    }
+  };
+
+  const onDragOver = (e) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
+
+  const onDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setFile(e.dataTransfer.files[0]);
+      setMessage("");
+    }
+  };
+
+  const handleFileInput = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+      setMessage("");
+    }
+  };
+
+  return (
+    <div className="app">
+      <div className="background-glow glow-1"></div>
+      <div className="background-glow glow-2"></div>
+
+      <div className="container">
+        <header className="hero">
+          <div>
+            <p className="badge">Secure File Sharing</p>
+            <h1>SecureShare</h1>
+            <p className="subtitle">
+              Upload, encrypt, manage, decrypt and download your files with a
+              clean modern dashboard.
+            </p>
+          </div>
+
+          <div className="stats-card">
+            <h3>Overview</h3>
+            <div className="stat-row">
+              <span>Total Files</span>
+              <strong>{files.length}</strong>
+            </div>
+            <div className="stat-row">
+              <span>Status</span>
+              <strong>{uploading ? "Uploading..." : "Ready"}</strong>
+            </div>
+          </div>
+        </header>
+
+        <section className="upload-card">
+          <div
+            className={`dropzone ${dragActive ? "active" : ""}`}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+          >
+            <div className="upload-icon">☁️</div>
+            <h2>Drag & Drop your file here</h2>
+            <p>or choose a file from your device</p>
+
+            <label className="browse-btn">
+              Browse File
+              <input type="file" onChange={handleFileInput} hidden />
+            </label>
+
+            {file && (
+              <div className="selected-file">
+                <span>Selected:</span> {file.name}
+              </div>
+            )}
+          </div>
+
+          <div className="upload-actions">
+            <button
+              className="primary-btn"
+              onClick={handleUpload}
+              disabled={uploading}
+            >
+              {uploading ? "Uploading..." : "Upload & Encrypt"}
+            </button>
+          </div>
+
+          {message && <div className="message-box">{message}</div>}
+        </section>
+
+        <section className="files-section">
+          <div className="section-header">
+            <h2>Your Files</h2>
+            <p>Encrypted files currently available in storage</p>
+          </div>
+
+          {files.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📂</div>
+              <h3>No files uploaded yet</h3>
+              <p>Upload your first file to see it appear here.</p>
+            </div>
+          ) : (
+            <div className="files-grid">
+              {files.map((f, i) => (
+                <div className="file-card" key={i}>
+                  <div className="file-top">
+                    <div className="file-icon">📄</div>
+                    <div className="file-info">
+                      <h3>{f}</h3>
+                      <p>Encrypted file stored securely</p>
+                    </div>
+                  </div>
+
+                  <div className="file-actions">
+                    <button
+                      className="decrypt-btn"
+                      onClick={() => handleDecrypt(f)}
+                    >
+                      🔓 Decrypt & Download
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(f)}
+                    >
+                      🗑 Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default App;

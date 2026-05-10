@@ -1,0 +1,141 @@
+const express = require("express");
+const multer = require("multer");
+const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+
+const PORT = 5000;
+
+// 📁 Upload folder
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
+// 📦 Multer setup
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
+
+// 🔐 UPLOAD + ENCRYPT
+app.post("/upload", upload.single("file"), (req, res) => {
+  try {
+    const filePath = req.file.path;
+
+    const key = crypto.randomBytes(32);
+    const iv = crypto.randomBytes(16);
+
+    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+
+    const input = fs.readFileSync(filePath);
+    let encrypted = cipher.update(input);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+    const encPath = filePath + ".enc";
+    fs.writeFileSync(encPath, encrypted);
+
+    // original delete
+    fs.unlinkSync(filePath);
+
+    res.json({
+      message: "File uploaded & encrypted",
+      filename: path.basename(encPath),
+      key: key.toString("hex"),
+      iv: iv.toString("hex"),
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Upload failed");
+  }
+});
+
+// 🔓 DOWNLOAD + DECRYPT
+app.get("/download/:filename", (req, res) => {
+  try {
+    const filePath = path.join(uploadDir, req.params.filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send("File not found");
+    }
+
+    const { key, iv } = req.query;
+
+    if (!key || !iv) {
+      return res.status(400).send("Key & IV required");
+    }
+
+    const encryptedData = fs.readFileSync(filePath);
+
+    const decipher = crypto.createDecipheriv(
+      "aes-256-cbc",
+      Buffer.from(key, "hex"),
+      Buffer.from(iv, "hex")
+    );
+
+    let decrypted = decipher.update(encryptedData);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+
+    const originalName = req.params.filename.replace(".enc", "");
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${originalName}"`
+    );
+    res.setHeader("Content-Type", "application/octet-stream");
+
+    res.send(decrypted);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Decryption failed");
+  }
+});
+
+// 📂 FILE LIST
+app.get("/files", (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadDir);
+    res.json(files);
+  } catch (err) {
+    res.status(500).send("Error reading files");
+  }
+});
+
+// ❌ DELETE FILE
+app.delete("/delete/:filename", (req, res) => {
+  try {
+    const filePath = path.join(uploadDir, req.params.filename);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      res.send("File deleted");
+    } else {
+      res.status(404).send("File not found");
+    }
+  } catch (err) {
+    res.status(500).send("Delete failed");
+  }
+});
+
+// 🧪 TEST
+app.get("/", (req, res) => {
+  res.send("SecureShare Backend Running 🚀");
+});
+
+// 🚀 START SERVER
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

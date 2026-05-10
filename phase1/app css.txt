@@ -1,0 +1,213 @@
+/* ===== IMPORT MODERN FONT ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Poppins:wght@400;600;700&display=swap');
+
+/* ===== VARIABLES ===== */
+:root {
+  --primary: #4f8cff;
+  --accent: #00ffcc;
+  --purple: #9b5cff;
+  --bg-dark: #060912;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* ===== RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", "Poppins", sans-serif;
+  background: var(--bg-dark);
+  color: #ffffff;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ===== ENHANCED ANIMATED BACKGROUND ===== */
+.app {
+  min-height: 100vh;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #10182d 0%, #060912 100%);
+  overflow: hidden;
+}
+
+/* Animated Mesh Gradient Overlay */
+.app::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: url("https://grainy-gradients.vercel.app/noise.svg"); /* Subtle Grain Texture */
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* ===== FLOATING BLOBS (SMOOTHER) ===== */
+.background-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.25;
+  z-index: 1;
+  animation: floatOrb 12s infinite alternate ease-in-out;
+}
+
+.glow-1 { width: 500px; height: 500px; background: var(--primary); top: -10%; left: -10%; }
+.glow-2 { width: 450px; height: 450px; background: var(--purple); bottom: -5%; right: -5%; animation-delay: -2s; }
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, 80px) scale(1.1); }
+}
+
+/* ===== MAIN CONTAINER ===== */
+.container {
+  position: relative;
+  z-index: 10;
+  width: 90%;
+  max-width: 1100px;
+  margin: auto;
+  padding: 80px 0;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(to right, #fff 20%, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 15px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #8a99b1;
+  font-weight: 300;
+}
+
+/* ===== THE PREMIUM CARD (Glassmorphism 2.0) ===== */
+.stats-card, .upload-card, .files-section {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  padding: 40px;
+  margin-bottom: 30px;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+}
+
+.upload-card:hover {
+  border-color: rgba(79, 140, 255, 0.4);
+  transform: translateY(-5px) scale(1.005);
+}
+
+/* ===== DROPZONE (NEON EDGE) ===== */
+.dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 60px 20px;
+  text-align: center;
+  transition: var(--transition);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dropzone:hover {
+  border-color: var(--accent);
+  background: rgba(0, 255, 204, 0.03);
+}
+
+.upload-icon {
+  font-size: 50px;
+  display: block;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 10px var(--primary));
+}
+
+/* ===== PREMIUM BUTTONS ===== */
+button {
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 30px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-btn {
+  background: #fff;
+  color: #000;
+}
+
+.primary-btn:hover {
+  background: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 255, 204, 0.3);
+}
+
+.decrypt-btn {
+  background: rgba(155, 92, 255, 0.15);
+  color: #d1b3ff;
+  border: 1px solid rgba(155, 92, 255, 0.3);
+}
+
+.decrypt-btn:hover {
+  background: var(--purple);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(155, 92, 255, 0.4);
+}
+
+/* ===== FILE GRID & CARDS ===== */
+.files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.file-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 24px;
+  border-radius: 20px;
+  transition: var(--transition);
+}
+
+.file-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--primary);
+  transform: translateY(-8px);
+}
+
+/* ===== STATUS MESSAGES ===== */
+.message-box {
+  background: rgba(0, 255, 204, 0.05);
+  border-left: 4px solid var(--accent);
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

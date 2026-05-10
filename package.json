@@ -1,0 +1,32 @@
+{
+  "name": "secureshare",
+  "version": "1.0.0",
+  "description": "SecureShare is a full-stack MERN application focused on high-security file sharing. It enables users to upload files, encrypt them on the server, and share them via secure, password-protected, and time-sensitive links.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LOVISH-OP/Secure-Share.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LOVISH-OP/Secure-Share/issues"
+  },
+  "homepage": "https://github.com/LOVISH-OP/Secure-Share#readme",
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "axios": "^1.15.0",
+    "bootstrap": "^5.3.8",
+    "cors": "^2.8.6",
+    "crypto-js": "^4.2.0",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "react-dropzone": "^15.0.0",
+    "react-icons": "^5.6.0"
+  }
+}
